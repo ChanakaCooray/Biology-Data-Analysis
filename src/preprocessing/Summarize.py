@@ -97,15 +97,22 @@ def analyze_matrix(df):
             if "CA" in header2 or location not in header2:
                 continue
 
+            count1 = df[header].sum()
+            count2 = df[header2].sum()
+
             dot_product = np.dot(df[header], df[header2])
             plant2 = header2[3:5]
-            dot_product_map["{}_{}_{}".format(plant,plant2,location)] = dot_product
+
+            dot_product_map["{}_{}_{}_probability1".format(plant, plant2, location)] = dot_product / count1
+            dot_product_map["{}_{}_{}_probability2".format(plant, plant2, location)] = dot_product / count2
+
+    # for k, v in dot_product_map.items():
+    #     print(k, v)
 
     sorted_dot_product_map = sorted(dot_product_map.items(), key=operator.itemgetter(1), reverse=True)
 
     for entry in sorted_dot_product_map:
         print(entry)
-
 
 
 def main():
