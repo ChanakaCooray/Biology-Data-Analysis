@@ -42,7 +42,7 @@ def summarize(df, prefix_size):
     group_name_prev = ""
     for header in header_list[1:]:
         group_name_new = header[:prefix_size]
-        if group_name_new==group_name_prev:
+        if group_name_new == group_name_prev:
             continue
         else:
             group_name_prev = group_name_new
@@ -59,6 +59,32 @@ def summarize(df, prefix_size):
     return df_summarize
 
 
+def convert_unweighted(df, prefix_size):
+    header_list = list(df)
+
+    df_unweighted_matrix = df[['OTU ID']].copy()
+
+    group_name_prev = ""
+    for header in header_list[1:]:
+        group_name_new = header[:prefix_size]
+        if group_name_new == group_name_prev:
+            continue
+        else:
+            group_name_prev = group_name_new
+
+        group_columns = df.filter(regex=group_name_new).copy()
+        group_columns["{}_mean".format(group_name_new)] = group_columns.mean(axis=1)
+
+        df_unweighted_matrix[group_name_new] = group_columns["{}_mean".format(group_name_new)].apply(
+            lambda x: 1 if x > 0 else 0)
+
+    return df_unweighted_matrix
+
+
+def analyze_matrix(df):
+    pass
+
+
 def main():
     data_dir = "data"
     input_file1 = os.path.join(data_dir, "BG.csv")
@@ -73,9 +99,9 @@ def main():
     verify_headers_rhizo(df_rhizo)
     verify_headers_roots(df_roots)
 
-    df_BG_summarize = summarize(df_BG, 6)
-    df_rhizo_summarize = summarize(df_rhizo, 5)
-    df_roots_summarize = summarize(df_roots, 4)
+    # df_BG_summarize = summarize(df_BG, 6)
+    # df_rhizo_summarize = summarize(df_rhizo, 5)
+    # df_roots_summarize = summarize(df_roots, 4)
 
     output_dir = "output"
 
@@ -83,9 +109,15 @@ def main():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    df_BG_summarize.to_csv(os.path.join(output_dir,"BG_summarize.csv"), index=None, sep=',', mode='w')
-    df_rhizo_summarize.to_csv(os.path.join(output_dir,"rhizo_summarize.csv"), index=None, sep=',', mode='w')
-    df_roots_summarize.to_csv(os.path.join(output_dir,"roots_summarize.csv"), index=None, sep=',', mode='w')
+    # df_BG_summarize.to_csv(os.path.join(output_dir, "BG_summarize.csv"), index=None, sep=',', mode='w')
+    # df_rhizo_summarize.to_csv(os.path.join(output_dir, "rhizo_summarize.csv"), index=None, sep=',', mode='w')
+    # df_roots_summarize.to_csv(os.path.join(output_dir, "roots_summarize.csv"), index=None, sep=',', mode='w')
+
+    df_unweighted_matrix = convert_unweighted(df_rhizo, 5)
+    df_unweighted_matrix.to_csv(os.path.join(output_dir, "rhizo_unweighted_matrix.csv"), index=None, sep=',', mode='w')
+
+    analyze_matrix(df_unweighted_matrix)
+
 
 if __name__ == '__main__':
     main()
