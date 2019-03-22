@@ -5,6 +5,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import sys
 import csv
 import pandas as pd
+import operator
 
 
 def verify_headers_BG(df):
@@ -82,7 +83,29 @@ def convert_unweighted(df, prefix_size):
 
 
 def analyze_matrix(df):
-    pass
+    header_list = list(df)
+
+    dot_product_map = {}
+    for header in header_list[1:]:
+        if "CA" in header:
+            plant = header[3:5]
+            location = header[1:3]
+        else:
+            continue
+
+        for header2 in header_list[1:]:
+            if "CA" in header2 or location not in header2:
+                continue
+
+            dot_product = np.dot(df[header], df[header2])
+            plant2 = header2[3:5]
+            dot_product_map["{}_{}_{}".format(plant,plant2,location)] = dot_product
+
+    sorted_dot_product_map = sorted(dot_product_map.items(), key=operator.itemgetter(1), reverse=True)
+
+    for entry in sorted_dot_product_map:
+        print(entry)
+
 
 
 def main():
@@ -114,7 +137,7 @@ def main():
     # df_roots_summarize.to_csv(os.path.join(output_dir, "roots_summarize.csv"), index=None, sep=',', mode='w')
 
     df_unweighted_matrix = convert_unweighted(df_rhizo, 5)
-    df_unweighted_matrix.to_csv(os.path.join(output_dir, "rhizo_unweighted_matrix.csv"), index=None, sep=',', mode='w')
+    # df_unweighted_matrix.to_csv(os.path.join(output_dir, "rhizo_unweighted_matrix.csv"), index=None, sep=',', mode='w')
 
     analyze_matrix(df_unweighted_matrix)
 
