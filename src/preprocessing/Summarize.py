@@ -85,7 +85,10 @@ def convert_unweighted(df, prefix_size):
 def analyze_matrix(df):
     header_list = list(df)
 
-    dot_product_map = {}
+    df_output = pd.DataFrame(columns=['Name', 'Dot product', 'probability 1', 'probability 2'])
+
+    # dot_product_map = {}
+    i = 0
     for header in header_list[1:]:
         if "CA" in header:
             plant = header[3:5]
@@ -103,16 +106,16 @@ def analyze_matrix(df):
             dot_product = np.dot(df[header], df[header2])
             plant2 = header2[3:5]
 
-            dot_product_map["{}_{}_{}_probability1".format(plant, plant2, location)] = dot_product / count1
-            dot_product_map["{}_{}_{}_probability2".format(plant, plant2, location)] = dot_product / count2
+            # dot_product_map["{}_{}_{}_probability1".format(plant, plant2, location)] = dot_product / count1
+            # dot_product_map["{}_{}_{}_probability2".format(plant, plant2, location)] = dot_product / count2
 
-    # for k, v in dot_product_map.items():
-    #     print(k, v)
+            df_output = df_output.append(
+                {'Name': "{}_{}_{}".format(plant, plant2, location), 'Dot product': dot_product,
+                 'probability 1': dot_product / count1, 'probability 2': dot_product / count2}, ignore_index=True)
 
-    sorted_dot_product_map = sorted(dot_product_map.items(), key=operator.itemgetter(1), reverse=True)
+            i += 1
 
-    for entry in sorted_dot_product_map:
-        print(entry)
+    return df_output
 
 
 def main():
@@ -146,7 +149,9 @@ def main():
     df_unweighted_matrix = convert_unweighted(df_rhizo, 5)
     # df_unweighted_matrix.to_csv(os.path.join(output_dir, "rhizo_unweighted_matrix.csv"), index=None, sep=',', mode='w')
 
-    analyze_matrix(df_unweighted_matrix)
+    df_output = analyze_matrix(df_unweighted_matrix)
+
+    df_output.to_csv(os.path.join(output_dir, "analyzed_output.csv"), index=None, sep=',', mode='w')
 
 
 if __name__ == '__main__':
