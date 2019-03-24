@@ -7,6 +7,9 @@ import csv
 import pandas as pd
 import operator
 
+import networkx as nx
+from networkx.algorithms import bipartite
+
 
 def verify_headers_BG(df):
     header_list = list(df)
@@ -118,6 +121,46 @@ def analyze_matrix(df):
     return df_output
 
 
+def draw_graph(edge_list):
+
+    B = nx.Graph()
+
+    for edge in edge_list:
+        B.add_edge(edge[0], edge[1])
+
+    X, Y = bipartite.sets(B)
+
+    print(len(X))
+    print(len(Y))
+
+    pos = dict()
+    pos.update((n, (1, i)) for i, n in enumerate(X))  # put nodes from X at x=1
+    pos.update((n, (2, i)) for i, n in enumerate(Y))  # put nodes from Y at x=2
+    nx.draw(B, pos=pos)
+    plt.show()
+
+
+def convert_edgelist(df, output_dir):
+    header_list = list(df)
+
+    edge_list = []
+    for header in header_list[1:]:
+        df_temp = df.loc[df[header] == 1]['OTU ID']
+
+        for entry in df_temp.values:
+            edge_list.append((header, entry))
+
+    output_file = os.path.join(output_dir, "edge_list.txt")
+    out = open(output_file, "w")
+    for entry in edge_list:
+        out.write("{} {} {}\n".format(entry[0], entry[1], 1))
+    out.close()
+    
+    draw_graph(edge_list)
+    
+    return edge_list
+
+
 def main():
     data_dir = "data"
     input_file1 = os.path.join(data_dir, "BG.csv")
@@ -149,6 +192,8 @@ def main():
     df_unweighted_matrix = convert_unweighted(df_rhizo, 5)
     # df_unweighted_matrix.to_csv(os.path.join(output_dir, "rhizo_unweighted_matrix.csv"), index=None, sep=',', mode='w')
 
+    convert_edgelist(df_unweighted_matrix, output_dir)
+    
     df_output = analyze_matrix(df_unweighted_matrix)
 
     df_output.to_csv(os.path.join(output_dir, "analyzed_output.csv"), index=None, sep=',', mode='w')
