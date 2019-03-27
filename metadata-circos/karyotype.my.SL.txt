@@ -1,0 +1,8 @@
+chr - OTU OTU 0 10000000000 orange
+chr - CA CA 0 100000000 blue
+chr - PM PM 0 100000000 red
+chr - SS SS 0 100000000 green
+chr - VL VL 0 100000000 purple
+chr - RA RA 0 100000000 vvdgreen
+chr - HP HP 0 100000000 yellow
+chr - PB PB 0 100000000 vlred

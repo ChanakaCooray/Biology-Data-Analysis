@@ -122,7 +122,6 @@ def analyze_matrix(df):
 
 
 def draw_graph(edge_list):
-
     B = nx.Graph()
 
     for edge in edge_list:
@@ -150,15 +149,84 @@ def convert_edgelist(df, output_dir):
         for entry in df_temp.values:
             edge_list.append((header, entry))
 
-    output_file = os.path.join(output_dir, "edge_list.txt")
-    out = open(output_file, "w")
+    output_file_LM = os.path.join(output_dir, "edge_list_LM.txt")
+    output_file_PF = os.path.join(output_dir, "edge_list_PF.txt")
+    output_file_SL = os.path.join(output_dir, "edge_list_SL.txt")
+
+    out_LM = open(output_file_LM, "w")
+    out_PF = open(output_file_PF, "w")
+    out_SL = open(output_file_SL, "w")
+
     for entry in edge_list:
-        out.write("{} {} {}\n".format(entry[0], entry[1], 1))
-    out.close()
-    
-    draw_graph(edge_list)
-    
+        if "LM" in entry[0] or "LM" in entry[1]:
+            out_LM.write("{} {} {}\n".format(entry[0], entry[1], 1))
+        if "PF" in entry[0] or "PF" in entry[1]:
+            out_PF.write("{} {} {}\n".format(entry[0], entry[1], 1))
+        if "SL" in entry[0] or "SL" in entry[1]:
+            out_SL.write("{} {} {}\n".format(entry[0], entry[1], 1))
+
+    out_LM.close()
+    out_PF.close()
+    out_SL.close()
+
+    # draw_graph(edge_list)
+
     return edge_list
+
+
+def convert_edgelist_circos(df, output_dir):
+    header_list = list(df)
+
+    edge_list = []
+    for header in header_list[1:]:
+        df_temp = df.loc[df[header] == 1]['OTU ID']
+
+        for entry in df_temp.values:
+            edge_list.append((header, entry))
+
+    output_file_LM = os.path.join(output_dir, "edge_list_LM_circos.txt")
+    output_file_PF = os.path.join(output_dir, "edge_list_PF_circos.txt")
+    output_file_SL = os.path.join(output_dir, "edge_list_SL_circos.txt")
+
+    out_LM = open(output_file_LM, "w")
+    out_PF = open(output_file_PF, "w")
+    out_SL = open(output_file_SL, "w")
+
+    for entry in edge_list:
+
+        plant = entry[0][3:]
+        otu_index = int(entry[1][3:]) * 1000000
+
+        color = "color=black"
+        if plant == "CA":
+            color = "color=blue"
+        if plant == "HP":
+            color = "color=yellow"
+        if plant == "PM":
+            color = "color=red"
+        if plant == "SS":
+            color = "color=green"
+        if plant == "VL":
+            color = "color=purple"
+        if plant == "RR":
+            color = "color=vvdred"
+        if plant == "MV":
+            color = "color=vvdblue"
+        if plant == "RA":
+            color = "color=vvdgreen"
+        if plant == "PB":
+            color = "color=vlred"
+
+        if "LM" in entry[0]:
+            out_LM.write("{} {} {} {} {} {} {}\n".format(plant, 0, 100000000, "OTU", otu_index, otu_index, color))
+        if "PF" in entry[0]:
+            out_PF.write("{} {} {} {} {} {} {}\n".format(plant, 0, 100000000, "OTU", otu_index, otu_index, color))
+        if "SL" in entry[0]:
+            out_SL.write("{} {} {} {} {} {} {}\n".format(plant, 0, 100000000, "OTU", otu_index, otu_index, color))
+
+    out_LM.close()
+    out_PF.close()
+    out_SL.close()
 
 
 def main():
@@ -192,8 +260,8 @@ def main():
     df_unweighted_matrix = convert_unweighted(df_rhizo, 5)
     # df_unweighted_matrix.to_csv(os.path.join(output_dir, "rhizo_unweighted_matrix.csv"), index=None, sep=',', mode='w')
 
-    convert_edgelist(df_unweighted_matrix, output_dir)
-    
+    convert_edgelist_circos(df_unweighted_matrix, output_dir)
+
     df_output = analyze_matrix(df_unweighted_matrix)
 
     df_output.to_csv(os.path.join(output_dir, "analyzed_output.csv"), index=None, sep=',', mode='w')
